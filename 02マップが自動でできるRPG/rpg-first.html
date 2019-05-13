@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        <meta charset="utf-8">
+       <meta http-equiv="X-UA-Compatible" content="IE=edge">                  
+        <title>マップゲーム</title>
+        <link rel="stylesheet" type="text/css" href="style.css">
+        <script type="text/javascript" src="http://code.jquery.com/jquery-3.3.1.min.js"></script>
+        <script type="text/javascript">
+"use strict";
+var ctx;
+//拾ったコインの枚数
+var coins = 0;
+//プレイヤーのライフの数
+var life=3;
+//敵の配列
+var enemies=[];
+//BGM用時間の経過
+var Time=0;
+//壁の配列
+var a=[],b=[],c=[],d=[];
+for(var i=0; i<24; i++) {
+    var M=Math.floor(Math.random()*3);
+    if(M==0){a[i]=1;}
+    else if(M==1){b[i]=1;}
+    else{c[i]=1;}
+    }
+    //コインの配列
+    for(var i=0; i<43; i++) {
+    var D=Math.floor(Math.random()*3);
+    if(D==0){d[i]=2;}
+    else{d[i]=0;}
+    }
+/*20×10個*/
+var data = [
+    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+    [1,0,a[0],d[0],a[1],d[1],a[2],d[2],a[3],d[3],a[4],d[4],a[5],d[5],a[6],d[6],a[7],d[7],0,1],
+    [1,b[0],1,b[1],1,b[2],1,b[3],1,b[4],1,b[5],1,b[6],1,b[7],1,0,a[24],1],
+    [1,d[8],c[0],d[9],c[1],d[10],c[2],d[11],c[3],d[12],c[4],d[13],c[5],d[14],c[6],d[15],c[7],d[16],a[24],1],
+    [1,d[17],a[8],d[18],a[9],d[19],a[10],d[20],a[11],d[21],a[12],d[22],a[13],d[23],a[14],d[24],a[15],d[25],a[24],1],
+    [1,b[8],1,b[9],1,b[10],1,b[11],1,b[12],1,b[13],1,b[14],1,b[15],1,b[24],b[24],1],
+    [1,d[26],c[8],d[27],c[9],d[28],c[10],d[29],c[11],d[30],c[12],d[31],c[13],d[32],c[14],d[33],c[15],d[34],c[24],1],
+    [1,d[35],a[16],d[36],a[17],d[37],a[18],d[38],a[19],d[39],a[20],d[40],a[21],d[41],a[22],d[42],a[23],c[24],d[43],1],
+    [1,b[16],1,b[17],1,b[18],1,b[19],1,b[20],1,b[21],1,b[22],1,b[23],1,c[23],3,1],
+    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+];
+// プレーヤーオブジェクトを作る
+var player = new MapPlayer();
+
+var timer;
+
+$(function(){
+    var canvas = $("#main");
+    ctx = canvas[0].getContext("2d");
+    onkeydown = mykeydown;
+    for(var i=0; i<5; i++) {
+        var enemy = new MapEnemy();
+        enemies.push(enemy);
+    }
+    timer = setInterval(tick, 1000);
+    setInterval(bgm,1000);
+    /*for(var i=0; i<24; i++) {
+    var M=Math.floor(Math.random()*3);
+    if(M==0){a[i]=1;}
+    else if(M==1){b[i]=1;}
+    else{c[i]=1;}
+    }*/
+});
+
+function mykeydown(e) {
+    var nx = player.x, ny = player.y;
+    switch (e.keyCode) {
+        case 37: nx--; break;
+        case 38: ny--; break;
+        case 39: nx++; break;
+        case 40: ny++; break;
+    }
+    var type = data[ny][nx];
+    if(type == 2) {
+        // コインを拾う
+        coins++;
+        $('#AudioCoin')[0].play();//効果音再生
+        // コインを消す
+        data[ny][nx] = 0;
+    }
+    if(type != 1) {
+        //壁でなければ進める
+        player.x = nx;
+        player.y = ny;
+    }
+
+    paint();
+}
+
+function paint() {
+    ctx.fillStyle = "black";
+    ctx.fillRect(0, 0, 800, 400);
+    var imgTile = $('#imgTile')[0];
+    var imgPlayer = $('#imgPlayer')[0];
+    var imgWall = $('#imgWall')[0];
+    var imgCoin = $('#imgCoin')[0];
+    var imgEnemy = $('#imgEnemy')[0];
+    var goal = $('#goal')[0];
+
+    for(var y = 0; y < data.length; y++) {
+        for(var x = 0; x < data[y].length; x++) {
+            var type = data[y][x];
+            if(type==1) {
+                ctx.drawImage(imgWall, x*40, y*40, 40, 40);
+            } 
+            else if(type == 2) {
+                ctx.drawImage(imgCoin, x*40, y*40, 40, 40);
+            }
+            else if(type == 3) {
+                ctx.drawImage(goal, x*40, y*40, 40, 40);
+            }
+            else {
+                ctx.drawImage(imgTile, x*40, y*40, 40, 40);
+            }
+       }
+    }
+    ctx.font = "36px 'Yu Gothic'";
+    ctx.fillStyle = "blue"
+    ctx.fillText('コイン:' + coins + '枚', 10, 40);
+    ctx.fillText('　　　　　　ライフ：' + life , 10, 40);
+    ctx.drawImage(imgPlayer, player.x*40, player.y*40, 40, 40);
+    for(var i = 0; i < 5; i++) {if(player.x==enemies[i].x &&player.y==enemies[i].y){
+            coins=coins-1;
+            life=life-1;
+            $('#AudioDamage')[0].play();//効果音再生
+        }
+    ctx.drawImage(imgEnemy, enemies[i].x*40, enemies[i].y*40, 40, 40);}
+}
+
+function tick() {
+    for(var i=0; i<enemies.length; i++) {
+        var enemy = enemies[i];
+        enemy.move();
+        
+    }
+    paint();
+    if(life<0){
+    ctx.font = "36px 'Yu Gothic'";
+    ctx.fillStyle = "red";
+    ctx.fillText('GameOver', 300, 200);
+    $('#AudioEnd')[0].play();//効果音再生
+    clearInterval(timer);}
+    if(player.x==18 &&player.y==8){ctx.font = "36px 'Yu Gothic'";
+    ctx.fillStyle = "blue";
+    ctx.fillText('GameClear!', 300, 200);
+    $('#AudioGoal')[0].play();//効果音再生
+    clearInterval(timer);}
+    
+}
+
+//プレーヤー
+function MapPlayer() {
+    this.x = 1;
+    this.y = 1;
+}
+//敵
+function MapEnemy() {
+this.x = Math.floor(Math.random() * 18) + 1; //1～19
+this.y = Math.floor(Math.random() * 8) + 1; //1～9
+this.move = function() {
+var nx = this.x, ny = this.y;
+//敵を動かす
+switch (Math.floor(Math.random() * 4)+ 37) {
+case 37: nx--; break;
+case 38: ny--; break;
+case 39: nx++; break;
+case 40: ny++; break;
+}
+var type = data[ny][nx];
+if(type != 1) {
+//壁でなければ進める
+this.x = nx;
+this.y = ny;
+}
+}
+}
+function bgm(){ if(Time==0){
+                $('#AudioBgm')[0].play();//BGM再生
+                }
+                Time=Time+1;
+                if(Time==1){
+                    Time=0;}
+                }
+        </script>
+    </head>
+    <body>
+        <canvas id="main" width="1000" height="600">
+        </canvas>
+        <img id="imgTile" src="images/tile.png" style="display: none;">
+        <img id="imgPlayer" src="images/player.png" style="display: none;">
+        <img id="imgWall" src="images/wall.png" style="display: none;">
+        <img id="imgCoin" src="images/coin.png" style="display: none;">
+        <img id="imgEnemy" src="images/enemy.png" style="display: none;">
+        <img id="goal" src="images/goal.png" style="display: none;">
+        <audio id="AudioCoin" style="display:none;">
+            <source src="audio/coin.mp3" type="audio/mp3">
+        </audio>
+        <audio id="AudioDamage" style="display:none;">
+            <source src="audio/damage.mp3" type="audio/mp3">
+        </audio>
+        <audio id="AudioEnd" style="display:none;">
+            <source src="audio/end.mp3" type="audio/mp3">
+        </audio>
+        <audio id="AudioGoal" style="display:none;">
+            <source src="audio/goal.mp3" type="audio/mp3">
+        </audio>
+        <audio id="AudioBgm" style="display:none;">
+            <source src="audio/bgm.mp3" type="audio/mp3">
+        </audio>
+    </body>
+</html>

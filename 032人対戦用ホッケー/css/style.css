@@ -1,0 +1,22 @@
+#main{border:solid 10px#0B3B0B;
+        background-color:#F5F6CE;}
+.player{   background-color:#F5F6CE;
+             font-size:30px;
+            margin-left:150px;
+            float:left;}
+.player1{color:#BB0000;}
+.player2{color:#0000BB;}
+#label_box{clear:both;}
+#label1{color:#BB0000;
+    background-color:#F5F6CE;
+        font-size:30px;
+    margin-left:140px;
+    margin-top:0px;
+    float:left;}
+#label2{color:#0000BB;
+    background-color:#F5F6CE;
+        font-size:30px;
+    margin-left:140px;
+    margin-top:0px;
+float:left;}
+#nav{clear:both;}

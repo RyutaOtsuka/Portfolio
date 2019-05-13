@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>最終課題</title>
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+    <script type="text/javascript" src="http://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script type="text/javascript">
+    "use strict";
+    // グローバル変数
+    var score1=0,score2=0;
+    var Reset_Flag,Smash_Flag1,Smash_Flag2,Rebound_Flag;
+    var label1 = $("#label1"),label2 = $("#label2");
+    var timer;
+    var myPack= new Pack(),myMallet1= new Mallet1(),myMallet2= new Mallet2();
+    var ctx;
+        $(function(){
+            var label1 = $("#label1");
+            label1.text('0ポイント');
+            var label2 = $("#label2");
+            label2.text('0ポイント');
+            var canvas = $("#main");
+            ctx= canvas[0].getContext("2d");
+            $(window).keydown(mykeydown);
+            Reset_Flag=2;
+            Smash_Flag1=0;
+           timer=setInterval(paint, 50);
+            });
+        //動く円盤のこと
+        function Pack() {
+            this.x=380;
+            this.y= 190;
+            this.r= 10;
+            this.speed_x= Math.floor(Math.random() * 10)+10;
+            this.speed_y= Math.floor(Math.random() * 10)+10;
+            this.move= function() {
+            this.x+= this.speed_x;
+            //跳ね返り、スマッシュ時跳ね返りで減速
+            if(this.x-this.r< 0 || this.x+ this.r> 760) 
+               {
+                if(Rebound_Flag==2){Rebound_Flag=0;
+                this.speed_x/= 2;
+                this.speed_y/= 2;
+                }
+               if(Rebound_Flag==1){Rebound_Flag=2;
+                this.speed_x/= 2;
+                this.speed_y/= 2;}
+                
+                if(this.x-this.r< -1 ) {this.x=this.r;}
+                else if(this.x+ this.r> 761){this.x=760-this.r;}
+                this.speed_x*= -1;
+                $('#SE_hit')[0].play();}//効果音再生
+                this.y+= this.speed_y;
+                
+            if(this.y-this.r< 0 || this.y+ this.r> 370) 
+                {if(this.y-this.r< -1) {this.y=this.r;}
+                else if(this.y+ this.r> 371){this.y=370-this.r;}
+                this.speed_y*= -1;
+                $('#SE_hit')[0].play();//効果音再生
+                }
+            }
+        }
+        //叩く棒のこと
+        function Mallet1() {
+            this.x= 60;
+            this.y= 150;
+            this.width= 20;
+            this.height= 100;
+            }
+        function Mallet2() {
+            this.x= 680;
+            this.y= 150;
+            this.width= 20;
+            this.height= 100;
+            }
+        function mykeydown(e) {
+            switch(e.keyCode) {
+            case 90: //左Z
+            myMallet1.x-= 20;
+            break;
+            case 67: //右C
+            myMallet1.x+= 20;
+            break;
+            case 83: //下S
+            myMallet1.y-= 20;
+            break;
+            case 88: //上X
+            myMallet1.y+= 20;
+            break;
+            case 87://上スマッシュW
+            if(Smash_Flag1==1)
+            {Smash_Flag1=2;
+                console.log(Smash_Flag1);
+            myPack.speed_x*=-4;
+                myPack.speed_y*=4
+                Rebound_Flag=1;
+                console.log(Rebound_Flag);
+                if(myPack.speed_x<0){myPack.speed_x*=-1;
+                }
+                if(myPack.speed_y>0){myPack.speed_y*=-1;}
+                $('#SE_smash')[0].play();}
+                break;
+            case 68://下スマッシュD
+            if(Smash_Flag1==1)
+            {Smash_Flag1=2;
+            console.log(Smash_Flag1);
+            myPack.speed_x*=-4;
+                myPack.speed_y*=4
+                Rebound_Flag=1;
+                if(myPack.speed_y<0){myPack.speed_y*=-1};
+                if(myPack.speed_x<0){myPack.speed_x*=-1;
+                }
+                $('#SE_smash')[0].play();}
+                break;
+                case 69://ストレートスマッシュE
+            if(Smash_Flag1==1)
+            {Smash_Flag1=2;
+            myPack.speed_x*=-3;
+                myPack.speed_y/=4
+                Rebound_Flag=1;
+                console.log(Rebound_Flag);
+                if(myPack.speed_x<0){myPack.speed_x*=-1;
+                }
+                if(myPack.speed_y>0){myPack.speed_y*=-1;}
+                $('#SE_smash')[0].play();}
+            break;
+            
+            //マレット２を動かす
+            case 190: //左.
+            myMallet2.x-= 20;
+            break;
+            case 226: //右\
+            myMallet2.x+= 20;
+            break;
+            case 186: //上:
+            myMallet2.y-= 20;
+            break;
+            case 191: //下/
+            myMallet2.y+= 20;
+            break;
+            case 192://上スマッシュ@
+            if(Smash_Flag2==1)
+            {Smash_Flag2=2;
+            myPack.speed_x*=-4;
+                myPack.speed_y*=4
+                Rebound_Flag=1;
+                console.log(Rebound_Flag);
+                if(myPack.speed_x>0){myPack.speed_x*=-1;
+                }
+                if(myPack.speed_y>0){myPack.speed_y*=-1;}
+                $('#SE_smash')[0].play();}
+                break;
+                case 187://下スマッシュ;
+            if(Smash_Flag2==1)
+            {Smash_Flag2=2;
+            console.log(Smash_Flag2);
+            myPack.speed_x*=-4;
+                myPack.speed_y*=4
+                Rebound_Flag=1;
+                if(myPack.speed_y<0){myPack.speed_y*=-1};
+                if(myPack.speed_x>0){myPack.speed_x*=-1;
+                    $('#SE_smash')[0].play();}
+                }
+                break;
+                case 80://ストレートスマッシュP
+            if(Smash_Flag2==1)
+            {Smash_Flag2=2;
+            myPack.speed_x*=-3;
+                myPack.speed_y/=4
+                Rebound_Flag=1;
+                console.log(Rebound_Flag);
+                if(myPack.speed_x>0){myPack.speed_x*=-1;
+                }
+                if(myPack.speed_y>0){myPack.speed_y*=-1;}
+                $('#SE_smash')[0].play();}
+            break;
+
+            //得点後はエンターキーを押す
+            case 13: //エンター
+            if((score1<=10&&score2<=10)&&Reset_Flag==1){
+                Reset_Flag=0;
+                clearInterval(timer);
+            timer=setInterval(paint, 50);
+            Rebound_Flag=0;
+            //マレットとパックの位置を初期化
+            myMallet1.x= 60;
+            myMallet1.y= 150;
+            myMallet1.width= 20;
+            myMallet1.height= 100;
+            myMallet2.x= 680;
+            myMallet2.y= 150;
+            myMallet2.width= 20;
+            myMallet2.height= 100;
+            myPack.x=380;
+            myPack.y= 190;
+            myPack.r= 10;
+            //Rの値でX,Yの方向が決まる
+            var R=Math.floor(Math.random() * 2)
+            if(R==0){R=1;}
+            else{R=-1;}
+            myPack.speed_x=  (Math.floor(Math.random() * 5)+10)*R;
+            R=Math.floor(Math.random() * 2)
+            if(R==0){R=1;}
+            else{R=-1;}
+            myPack.speed_y= (Math.floor(Math.random() * 5)+5)*R;}
+            default:
+            return true;
+
+            
+        }
+        return false;
+        }
+        function paint() {
+            ctx.clearRect(0, 0, 1000, 1000);
+            //真ん中を仕切る線を描く
+            console.log(Smash_Flag1);
+            ctx.fillStyle="#0B3B0B";
+            ctx.beginPath();
+            ctx.moveTo(377, 0);//760,380
+            ctx.lineTo(383, 0);
+            ctx.lineTo(383, 380);
+            ctx.lineTo(377, 380);
+            ctx.closePath();
+            ctx.fill();
+            //真ん中の円を描く
+            ctx.beginPath();
+            ctx.strokeStyle="#0B3B0B";
+            ctx.lineWidth= 5;
+            ctx.arc(380, 190, 50,0, Math.PI*2);
+            ctx.stroke();
+            ctx.closePath();
+            //左右のゴールを描く
+            ctx.beginPath();
+            ctx.strokeStyle="#0B3B0B";
+            ctx.lineWidth= 5;
+            ctx.moveTo(0, 190-100);//760,380
+            ctx.lineTo(30, 190-100);
+            ctx.lineTo(30, 190+100);
+            ctx.lineTo(0, 190+100);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.strokeStyle="#0B3B0B";
+            ctx.lineWidth= 5;
+            ctx.moveTo(760, 190-100);//760,380
+            ctx.lineTo(760-30, 190-100);
+            ctx.lineTo(760-30, 190+100);
+            ctx.lineTo(760, 190+100);
+            ctx.stroke();
+            //パックを描く
+            ctx.fillStyle= "orange";
+            ctx.beginPath();
+            ctx.arc(myPack.x, myPack.y, myPack.r, 0, Math.PI*2);
+            ctx.closePath();
+            ctx.fill();
+            myPack.move();
+            ctx.fillStyle= "#f00";
+            ctx.fillRect(myMallet1.x, myMallet1.y, myMallet1.width, myMallet1.height);
+            ctx.fillStyle= "#00f";
+            ctx.fillRect(myMallet2.x, myMallet2.y, myMallet2.width, myMallet2.height);
+            var right1 = myMallet1.x+ myMallet1.width;
+            var bottom1 = myMallet1.y+ myMallet1.height;
+            var right2 = myMallet2.x+ myMallet2.width;
+            var bottom2 = myMallet2.y+ myMallet2.height;
+            if ((myMallet1.y< myPack.y+ myPack.r)
+                && (myPack.y-myPack.r< bottom1)
+                && (myMallet1.x< myPack.x+ myPack.r)
+                && (myPack.x-myPack.r< right1)
+                ) {
+                    if (0 < myPack.speed_x)
+                        {myPack.x= (myMallet1.x-myPack.r);}
+                        else
+                        {myPack.x= (right1 + myPack.r);}
+                        myPack.speed_x*= -1;
+                }
+            if ((myMallet1.x< myPack.x+ myPack.r)
+                && (myPack.x-myPack.r< right1)
+                && (myMallet1.y< myPack.y+ myPack.r)
+                && (myPack.y-myPack.r< bottom1)
+                ) {
+                    if (0 < myPack.speed_y)
+                        {myPack.y= myMallet1.y-myPack.r;}
+                    else
+                        {myPack.y= bottom1 + myPack.r;}
+                    myPack.speed_y*= -1;
+            }
+
+            if ((myMallet2.y< myPack.y+ myPack.r)
+                && (myPack.y-myPack.r< bottom2)
+                && (myMallet2.x< myPack.x+ myPack.r)
+                && (myPack.x-myPack.r< right2)
+                ) {
+                    if (0 < myPack.speed_x)
+                        {myPack.x= (myMallet2.x-myPack.r);}
+                        else
+                        {myPack.x= (right2 + myPack.r);}
+                        myPack.speed_x*= -1;
+                }
+            if ((myMallet2.x< myPack.x+ myPack.r)
+                && (myPack.x-myPack.r< right2)
+                && (myMallet2.y< myPack.y+ myPack.r)
+                && (myPack.y-myPack.r< bottom2)
+                ) {
+                    if (0 < myPack.speed_y)
+                        {myPack.y= myMallet2.y-myPack.r;}
+                    else
+                        {myPack.y= bottom2 + myPack.r;}
+                    myPack.speed_y*= -1;
+            }
+            //スマッシュチャンス1
+            if((myMallet1.x<myPack.x-myPack.r&&myPack.x-myPack.r<myMallet1.x+50)
+            &&myMallet1.y-10<myPack.y-myPack.r&&myPack.y+myPack.r<bottom1+10)
+            {Smash_Flag1=1;
+                }
+           else{Smash_Flag1=0;}
+           //スマッシュチャンス2
+          if((myMallet2.x>myPack.x+myPack.r&&myPack.x+myPack.r>myMallet2.x-50)
+            &&myMallet2.y-10<myPack.y-myPack.r&&myPack.y+myPack.r<bottom2+10)
+            {Smash_Flag2=1;
+            }
+           else{Smash_Flag2=0;}
+            //プレイヤー1がゴールした時
+            if(myPack.x+myPack.r>759
+            &&(myPack.y-myPack.r>190-100&&myPack.y+myPack.r<190+100)){
+                score1=score1+1;
+                if(score1<=10){
+                    Reset_Flag=1;
+                console.log(score1);
+                $('#SE_hit')[0].play();//効果音再生
+                ctx.font = "80px 'Yu Gothic'";
+                ctx.fillStyle = "red";
+                 ctx.fillText('Player1 Goal!', 100, 200);
+                 ctx.font = "30px 'Yu Gothic'";
+                ctx.fillStyle = "#000";
+                 ctx.fillText('Enterキーで再開', 250, 300);
+                 var label1 = $("#label1");
+                 label1.text(score1+'ポイント');
+                clearInterval(timer);}
+                    else{ $('#SE_hit')[0].play();//効果音再生
+                ctx.font = "100px 'Yu Gothic'";
+                ctx.fillStyle = "red";
+                 ctx.fillText('Player1 WINEER', 0, 200);
+                 $('#SE_smash')[0].play();
+                 var label1 = $("#label1");
+                 label1.text(score1+'ポイント');
+                clearInterval(timer);}
+                }
+                //プレイヤー2がゴールした時
+            if(myPack.x-myPack.r<1
+            &&(myPack.y-myPack.r>190-100&&myPack.y+myPack.r<190+100)){
+                score2=score2+1;
+                if(score2<=10){
+                    Reset_Flag=1;
+                console.log(score2);
+                ctx.font = "80px 'Yu Gothic'";
+                ctx.fillStyle = "blue";
+                 ctx.fillText('Player2 Goal!', 100, 200);
+                 ctx.font = "30px 'Yu Gothic'";
+                ctx.fillStyle = "#000";
+                 ctx.fillText('Enterキーで再開', 250, 300);
+                 var label2 = $("#label2");
+                 label2.text(score2+'ポイント');
+                clearInterval(timer);}
+                else{ $('#SE_hit')[0].play();//効果音再生
+                ctx.font = "100px 'Yu Gothic'";
+                ctx.fillStyle = "blue";
+                 ctx.fillText('Player2 WINEER', 0, 200);
+                 $('#SE_smash')[0].play();
+                 var label1 = $("#label1");
+                 label1.text(score1+'ポイント');
+                clearInterval(timer);}
+            }
+            //初期状態
+            if(Reset_Flag==2){
+                ctx.font = "50px 'Yu Gothic'";
+                ctx.fillStyle = "#000";
+                ctx.fillText('Enterキーで開始！', 150, 300);
+                Reset_Flag=1;
+            clearInterval(timer);}
+  }
+        
+</script>
+</head>
+<body>
+ <audio id="SE_hit" style="display:none;">
+    <source src="sound/SE_hit.mp3" type="audio/mp3">
+ </audio>
+ <audio id="SE_smash" style="display:none;">
+    <source src="sound/SE_smash.mp3" type="audio/mp3">
+ </audio>
+ <audio id="SE_win" style="display:none;">
+    <source src="sound/SE_win.mp3" type="audio/mp3">
+ </audio>
+<canvas id="main" width="760" height="380">
+</canvas>
+<div>
+    <p class="player player1">Player1</p>
+    <p class="player player2">Player2</p>
+    </div>
+<div id="label_box">
+<p id="label1"></p>
+<p id="label2"></p>
+<p id="nav">操作方法<br>
+            Player1<br>
+            S:上移動　X:下移動<br>
+            Z:左移動　C：右移動<br>
+            W:上スマッシュ　D:下スマッシュ　E:ストレートスマッシュ<br>
+            Player2<br>
+            ::上移動　/:下移動<br>
+            .:左移動　\：右移動<br>
+            @:上スマッシュ　;:下スマッシュ　P:ストレートスマッシュ<br></p>
+</div>
+</body>
+</html>
